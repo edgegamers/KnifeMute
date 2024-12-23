@@ -1,0 +1,63 @@
+﻿name: .NET Build and Release
+permissions:
+  contents: write
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: mcr.microsoft.com/dotnet/nightly/sdk:8.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet publish --configuration Debug
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: net8.0-artifacts
+          path: |
+            bin/Debug/net8.0/publish/KnifeMute.deps.json
+            bin/Debug/net8.0/publish/KnifeMute.dll
+            bin/Debug/net8.0/publish/KnifeMute.pdb
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: net8.0-artifacts
+          path: bin/Debug/net8.0
+
+      - name: Create Tag
+        id: tag_version
+        run: |
+          DATE=$(date +'%y.%m.%d-%H%M%S')
+          echo "RELEASE_TAG=$DATE" >> $GITHUB_ENV
+
+      - name: Determine if Pre-release
+        id: prerelease
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: bin/Debug/net8.0/*
+          prerelease: ${{ env.IS_PRERELEASE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
