@@ -30,18 +30,8 @@ public class KnifeMute : BasePlugin {
   }
 
   private HookResult handleSoundEvent(UserMessage msg) {
-    var soundEvent = msg.ReadUInt("soundevent_hash");
-    
-    Server.PrintToChatAll(soundEvent.ToString());
-    
-    if (soundEvent is not (SoundEvents.KNIFE_LEFTSTAB_BOTHSIDES
-      or SoundEvents.KNIFE_RIGHTSTAB_BOTHSIDES))
-      return HookResult.Continue;
-
     if (Server.TickCount - lastKnifeTick > 1) return HookResult.Continue;
 
-    // msg.SetUInt("soundevent_hash", SoundEvents.KNIFE_SWINGAIR_BOTHSIDES);
-    // return HookResult.Continue;
     return HookResult.Handled;
   }
 
