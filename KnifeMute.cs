@@ -40,8 +40,9 @@ public class KnifeMute : BasePlugin {
 
     if (Server.TickCount - lastKnifeTick > 1) return HookResult.Continue;
 
-    msg.SetUInt("soundevent_hash", SoundEvents.KNIFE_SWINGAIR_BOTHSIDES);
-    return HookResult.Continue;
+    // msg.SetUInt("soundevent_hash", SoundEvents.KNIFE_SWINGAIR_BOTHSIDES);
+    // return HookResult.Continue;
+    return HookResult.Handled;
   }
 
   private HookResult OnTakeDamage(DynamicHook hook) {
